@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/QuantumArchive/koa-mongo-resource#readme",
   "dependencies": {
+    "body-parser": "^1.15.2",
     "koa": "^1.2.4",
     "koa-router": "^5.4.0",
     "mongoose": "^4.6.6",
