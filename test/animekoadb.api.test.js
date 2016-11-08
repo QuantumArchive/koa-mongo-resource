@@ -3,10 +3,10 @@ const assert = chai.assert;
 const chaiHttp = require('chai-http');
 chai.use(chaiHttp);
 const connection = require('../lib/mongoose-setup');
-const app = require('../lib/app')
+const app = require('../lib/app');
 
 describe('tests the animechara and animeshows api using a koa framework', () => {
-   before( done => {
+    before( done => {
         const CONNECTED = 1;
         if (connection.readyState === CONNECTED) dropCollection();
         else connection.on('open', dropCollection);
@@ -15,11 +15,11 @@ describe('tests the animechara and animeshows api using a koa framework', () => 
             const animeshow = 'animeshows';
             const animechar = 'animechars';
             connection.db
-                .listCollections({name: [animeshow, animechar]})
-                .next((err, callinfo) => {
-                    if (!callinfo) return done();
-                    connection.db.dropCollection([animeshow, animechar], done);
-                });
+                    .listCollections({name: [animeshow, animechar]})
+                    .next((err, callinfo) => {
+                        if (!callinfo) return done();
+                        connection.db.dropCollection([animeshow, animechar], done);
+                    });
         };
     });
 
@@ -74,6 +74,66 @@ describe('tests the animechara and animeshows api using a koa framework', () => 
             .get('/animechars/' + keiichi._id)
             .then(res => {
                 assert.deepEqual(res.body, keiichi);
+                done();
+            })
+            .catch(err => {
+                console.error(err);
+                done(err);
+            });
+    });
+
+    it('makes a /POST request to anime shows using Higurashi', done => {
+        request
+            .post('/animeshows')
+            .set('content', JSON.stringify(higurashi))
+            .then(res => {
+                const show = res.body;
+                assert.isOk(show._id);
+                higurashi._id = show._id;
+                higurashi.__v = 0;
+                higurashi.airdate = show.airdate;
+                assert.deepEqual(show, higurashi);
+                done();
+            })
+            .catch(err => {
+                console.error(err);
+                done(err);
+            });
+    });
+
+    it('makes a /PUT request to update the show', done => {
+        request
+            .put('/animeshows/' + higurashi._id)
+            .set('content', JSON.stringify({genre: 'mystery horror comedy'}))
+            .then(res => {
+                higurashi.genre = 'mystery horror comedy';
+                assert.deepEqual(res.body, higurashi);
+                done();
+            })
+            .catch(err => {
+                console.error(err);
+                done(err);
+            });
+    });
+
+    it('makes a /DEL request to remove Keiichi', done => {
+        request
+            .del('/animechars/' + keiichi._id)
+            .then(res => {
+                assert.deepEqual(res.body, keiichi);
+                done();
+            })
+            .catch(err => {
+                console.error(err);
+                done(err);
+            });
+    });
+
+    it('makes a /DEL request to remove Higurashi', done => {
+        request
+            .del('/animeshows/' + higurashi._id)
+            .then(res => {
+                assert.deepEqual(res.body, higurashi);
                 done();
             })
             .catch(err => {
